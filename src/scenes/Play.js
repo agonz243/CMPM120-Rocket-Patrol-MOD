@@ -81,6 +81,21 @@ class Play extends Phaser.Scene {
 
 
     update() {
+        // Upgrade ship if enough points are collected
+        if (this.p1Score >= 10 && !this.p1Rocket.upgraded) {
+            // Temporarily add upgrade text to screen
+            let upText = this.add.text(game.config.width/2, game.config.height/2, 'UPGRADE!!!').setOrigin(0.5);
+            this.time.delayedCall(2000, () => {
+                upText.destroy();
+            }, null, this);
+
+            // Destroy old rocket and replace with upgraded version
+            this.p1Rocket.destroy();
+            this.p1Rocket = new MiniRocket(this, game.config.width/2, game.config.height - borderUISize - borderPadding, 'rocket').setOrigin(0.5, 0);
+            this.p1Rocket.upgraded = true;
+            this.p1Rocket.update();
+        }
+
         // check key input for restart
         if (this.gameOver && Phaser.Input.Keyboard.JustDown(keyR)) {
             this.scene.restart();
