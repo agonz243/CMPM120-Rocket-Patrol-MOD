@@ -7,6 +7,7 @@ class Play extends Phaser.Scene {
         // load images/tile sprites
         this.load.image('rocket', './assets/rocket.png');
         this.load.image('spaceship', './assets/spaceship.png');
+        this.load.image('minispaceship', './assets/minispaceship.png')
         this.load.image('starfield', './assets/starfield.png');
 
         // load spritesheet
@@ -27,7 +28,11 @@ class Play extends Phaser.Scene {
         this.add.rectangle(game.config.width - borderUISize, 0, borderUISize, game.config.height, 0xFFFFFF).setOrigin(0, 0);
 
         // add rocket (p1)
-        this.p1Rocket = new Rocket(this, game.config.width/2, game.config.height - borderUISize - borderPadding, 'rocket').setOrigin(0.5, 0);
+        if (game.settings.mode == 'easy') {
+            this.p1Rocket = new MiniRocket(this, game.config.width/2, game.config.height - borderUISize - borderPadding, 'rocket').setOrigin(0.5, 0);
+        } else {
+            this.p1Rocket = new Rocket(this, game.config.width/2, game.config.height - borderUISize - borderPadding, 'rocket').setOrigin(0.5, 0);
+        }
 
         // add spaceships (x3)
         this.ship01 = new Spaceship(this, game.config.width + borderUISize*6, borderUISize*4, 'spaceship', 0, 30).setOrigin(0, 0);
@@ -77,24 +82,17 @@ class Play extends Phaser.Scene {
             this.add.text(game.config.width/2, game.config.height/2 + 64, 'Press (R) to Restart or ← for menu', scoreConfig).setOrigin(0.5);
             this.gameOver = true;
         }, null, this);
+
+        this.input.on('pointerdown', function (pointer) {
+            if (game.settings.mode == 'easy') {
+                console.log('down');
+                this.p1Rocket.isFiring = true;
+            }
+        }, this);
     }
 
 
     update() {
-        // Upgrade ship if enough points are collected
-        if (this.p1Score >= 10 && !this.p1Rocket.upgraded) {
-            // Temporarily add upgrade text to screen
-            let upText = this.add.text(game.config.width/2, game.config.height/2, 'UPGRADE!!!').setOrigin(0.5);
-            this.time.delayedCall(2000, () => {
-                upText.destroy();
-            }, null, this);
-
-            // Destroy old rocket and replace with upgraded version
-            this.p1Rocket.destroy();
-            this.p1Rocket = new MiniRocket(this, game.config.width/2, game.config.height - borderUISize - borderPadding, 'rocket').setOrigin(0.5, 0);
-            this.p1Rocket.upgraded = true;
-            this.p1Rocket.update();
-        }
 
         // check key input for restart
         if (this.gameOver && Phaser.Input.Keyboard.JustDown(keyR)) {
@@ -118,18 +116,43 @@ class Play extends Phaser.Scene {
             this.ship03.update();
         }
 
-        // check collisions
+        // check collisions for ship 03
         if (this.checkCollision(this.p1Rocket, this.ship03)) {
             this.p1Rocket.reset();
             this.shipExplode(this.ship03);
+
+            let randomVal = Phaser.Math.Between(1, 10);
+            if (randomVal % 3 == 0) {
+                this.ship03 = new MiniSpaceship(this, game.config.width, borderUISize*6 + borderPadding*4, 'minispaceship', 0, 10).setOrigin(0,0);
+            } else if (this.ship03 instanceof MiniSpaceship) {
+                this.ship03 = new Spaceship(this, game.config.width, borderUISize*6 + borderPadding*4, 'spaceship', 0, 10).setOrigin(0,0);
+            }
         }
+
+        // check collisions for ship 02
         if (this.checkCollision(this.p1Rocket, this.ship02)) {
             this.p1Rocket.reset();
             this.shipExplode(this.ship02);
+
+            let randomVal = Phaser.Math.Between(1, 10);
+            if (randomVal % 3 == 0) {
+                this.ship02 = new MiniSpaceship(this, game.config.width + borderUISize*3, borderUISize*5 + borderPadding*2, 'minispaceship', 0, 20).setOrigin(0,0);
+            } else if (this.ship02 instanceof MiniSpaceship) {
+                this.ship02 = new Spaceship(this, game.config.width + borderUISize*3, borderUISize*5 + borderPadding*2, 'minispaceship', 0, 20).setOrigin(0,0);
+            }
         }
+
+        // check collisions for ship 01
         if (this.checkCollision(this.p1Rocket, this.ship01)) {
             this.p1Rocket.reset();
             this.shipExplode(this.ship01);
+
+            let randomVal = Phaser.Math.Between(1, 10);
+            if (randomVal % 3 == 0) {
+                this.ship01 = new MiniSpaceship(this, game.config.width + borderUISize*6, borderUISize*4, 'minispaceship', 0, 30).setOrigin(0, 0);
+            } else if (this.ship01 instanceof MiniSpaceship) {
+                this.ship01 = new Spaceship(this, game.config.width + borderUISize*6, borderUISize*4, 'spaceship', 0, 30).setOrigin(0, 0);
+            }
         }
     }
 
@@ -153,7 +176,7 @@ class Play extends Phaser.Scene {
         boom.anims.play('explode');             // play explode animation
         boom.on('animationcomplete', () => {    // callback after anim completes
           ship.reset();                         // reset ship position
-          ship.alpha = 1;                       // make ship visible again
+          ship.alpha = 1;                       // make ship visible again  
           boom.destroy();                       // remove explosion sprite
         });  
         

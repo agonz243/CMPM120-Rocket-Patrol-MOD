@@ -20,3 +20,11 @@ class Spaceship extends Phaser.GameObjects.Sprite {
         this.x = game.config.width;
     }
 }
+
+class MiniSpaceship extends Spaceship {
+    constructor (scene, x, y, texture, frame, pointValue) {
+        super(scene, x, y, texture, frame);
+        this.points = pointValue * 2;
+        this.moveSpeed = game.settings.spaceshipSpeed + 3;
+    }
+}
