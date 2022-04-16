@@ -78,17 +78,16 @@ class Play extends Phaser.Scene {
         // GAME OVER Flag
         this.gameOver = false;
 
-        // 60-second play clock
-        scoreConfig.fixedWidth = 0;
-        this.clock = this.time.delayedCall(game.settings.gameTimer, () => {
-            this.add.text(game.config.width/2, game.config.height/2, 'GAME OVER', scoreConfig).setOrigin(0.5);
-            this.add.text(game.config.width/2, game.config.height/2 + 64, 'Press (R) to Restart or ← for menu', scoreConfig).setOrigin(0.5);
-            this.gameOver = true;
-        }, null, this);
+        // Check for Game Over
+        this.timer = this.time.addEvent({
+            delay: 500,
+            callback: this.gameOverCheck,
+            callbackScope: this,
+            loop: true
+        });
 
         this.input.on('pointerdown', function (pointer) {
             if (game.settings.mode == 'easy') {
-                console.log('down');
                 this.p1Rocket.isFiring = true;
             }
         }, this);
@@ -99,6 +98,14 @@ class Play extends Phaser.Scene {
 
         // check key input for restart
         if (this.gameOver && Phaser.Input.Keyboard.JustDown(keyR)) {
+            // Reset timer variables
+            game.settings.currTime = 0;
+
+            if (game.settings.mode == 'easy') {
+                game.settings.gameTimer = 60000;
+            } else {
+                game.settings.gameTimer = 45000;
+            }
             this.scene.restart();
         }
 
@@ -131,6 +138,9 @@ class Play extends Phaser.Scene {
             } else if (this.ship03 instanceof MiniSpaceship) {
                 this.ship03 = new Spaceship(this, game.config.width, borderUISize*6 + borderPadding*4, 'spaceship', 0, 10).setOrigin(0,0);
             }
+
+            // Add time to clock
+            game.settings.gameTimer += 500;
         }
 
         // check collisions for ship 02
@@ -144,6 +154,9 @@ class Play extends Phaser.Scene {
             } else if (this.ship02 instanceof MiniSpaceship) {
                 this.ship02 = new Spaceship(this, game.config.width + borderUISize*3, borderUISize*5 + borderPadding*2, 'minispaceship', 0, 20).setOrigin(0,0);
             }
+
+            // Add time to clock
+            game.settings.gameTimer += 1000;
         }
 
         // check collisions for ship 01
@@ -157,6 +170,9 @@ class Play extends Phaser.Scene {
             } else if (this.ship01 instanceof MiniSpaceship) {
                 this.ship01 = new Spaceship(this, game.config.width + borderUISize*6, borderUISize*4, 'spaceship', 0, 30).setOrigin(0, 0);
             }
+
+            // Add time to clock
+            game.settings.gameTimer += 1500;
         }
     }
 
@@ -208,5 +224,28 @@ class Play extends Phaser.Scene {
         this.clock = this.time.delayedCall(200, () => {
             particles.destroy();
         }, null, this);
+    }
+
+    gameOverCheck() {
+        let endConfig = {
+            fontFamily: 'Courier',
+            fontSize: '28px',
+            backgroundColor: '#F3B141',
+            color: '#843605',
+            align: 'right',
+            padding: {
+            top: 5,
+            bottom: 5,
+            },
+            fixedWidth: 100
+        }
+
+        game.settings.currTime += 500;
+        if (game.settings.currTime == game.settings.gameTimer) {
+            endConfig.fixedWidth = 0;
+            this.add.text(game.config.width/2, game.config.height/2, 'GAME OVER', endConfig).setOrigin(0.5);
+            this.add.text(game.config.width/2, game.config.height/2 + 64, 'Press (R) to Restart or ← for menu', endConfig).setOrigin(0.5);
+            this.gameOver = true;
+        }
     }
 }
