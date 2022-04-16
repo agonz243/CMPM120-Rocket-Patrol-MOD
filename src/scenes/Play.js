@@ -7,6 +7,7 @@ class Play extends Phaser.Scene {
         // load images/tile sprites
         this.load.image('rocket', './assets/rocket.png');
         this.load.image('spaceship', './assets/spaceship.png');
+        this.load.image('particle', './assets/particle.png')
         this.load.image('minispaceship', './assets/minispaceship.png')
         this.load.image('starfield', './assets/starfield.png');
 
@@ -182,6 +183,27 @@ class Play extends Phaser.Scene {
         
         this.p1Score += ship.points;
         this.scoreLeft.text = this.p1Score;
+        this.showParticles(ship);
         this.sound.play('sfx_explosion');
       }
+
+    showParticles(ship) {
+        let particles = this.add.particles('particle');
+
+        let emitter = particles.createEmitter({
+            x: ship.x,
+            y: ship.y,
+            angle: { min: 0, max: 360 },
+            speed: 400,
+            gravityY: 350,
+            lifespan: 1000,
+            quantity: 6,
+            scale: { start: 0.1, end: 2 },
+            blendMode: 'ADD'
+        });
+
+        this.clock = this.time.delayedCall(200, () => {
+            particles.destroy();
+        }, null, this);
+    }
 }
