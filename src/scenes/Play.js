@@ -74,13 +74,14 @@ class Play extends Phaser.Scene {
 
         // Add text to screen on creation
         this.scoreLeft = this.add.text(borderUISize + borderPadding, borderUISize + borderPadding*2, this.p1Score, scoreConfig);
+        this.timeRight = this.add.text(borderUISize*5 + borderPadding ,borderUISize + borderPadding*2, game.settings.gameTimer / 1000, scoreConfig);
 
         // GAME OVER Flag
         this.gameOver = false;
 
         // Check for Game Over
         this.timer = this.time.addEvent({
-            delay: 500,
+            delay: 1000,
             callback: this.gameOverCheck,
             callbackScope: this,
             loop: true
@@ -140,7 +141,7 @@ class Play extends Phaser.Scene {
             }
 
             // Add time to clock
-            game.settings.gameTimer += 500;
+            game.settings.gameTimer += 1000;
         }
 
         // check collisions for ship 02
@@ -156,7 +157,7 @@ class Play extends Phaser.Scene {
             }
 
             // Add time to clock
-            game.settings.gameTimer += 1000;
+            game.settings.gameTimer += 2000;
         }
 
         // check collisions for ship 01
@@ -172,7 +173,7 @@ class Play extends Phaser.Scene {
             }
 
             // Add time to clock
-            game.settings.gameTimer += 1500;
+            game.settings.gameTimer += 3000;
         }
     }
 
@@ -240,8 +241,9 @@ class Play extends Phaser.Scene {
             fixedWidth: 100
         }
 
-        game.settings.currTime += 500;
-        if (game.settings.currTime == game.settings.gameTimer) {
+        game.settings.gameTimer -= 1000;
+        this.timeRight.text = game.settings.gameTimer / 1000;
+        if (game.settings.gameTimer <= 0) {
             endConfig.fixedWidth = 0;
             this.add.text(game.config.width/2, game.config.height/2, 'GAME OVER', endConfig).setOrigin(0.5);
             this.add.text(game.config.width/2, game.config.height/2 + 64, 'Press (R) to Restart or ← for menu', endConfig).setOrigin(0.5);
