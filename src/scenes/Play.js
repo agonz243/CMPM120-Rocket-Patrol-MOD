@@ -241,8 +241,11 @@ class Play extends Phaser.Scene {
             fixedWidth: 100
         }
 
-        game.settings.gameTimer -= 1000;
-        this.timeRight.text = game.settings.gameTimer / 1000;
+        if (!this.gameOver) {
+            game.settings.gameTimer -= 1000;
+            this.timeRight.text = game.settings.gameTimer / 1000; 
+        }
+        
         if (game.settings.gameTimer <= 0) {
             endConfig.fixedWidth = 0;
             this.add.text(game.config.width/2, game.config.height/2, 'GAME OVER', endConfig).setOrigin(0.5);
